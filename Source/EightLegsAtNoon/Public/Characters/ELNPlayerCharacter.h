@@ -7,6 +7,8 @@
 #include "ELNPlayerCharacter.generated.h"
 
 class UCameraComponent;
+class UInputAction;
+class UInputMappingContext;
 class USkeletalMeshComponent;
 class USpringArmComponent;
 
@@ -31,6 +33,18 @@ public:
 
 protected:
 	void UpdateCursorAim(float DeltaTime);
+	void HandleFirePressed();
+	bool GetCursorTrace(FHitResult& OutHit, FVector& OutTraceStart, FVector& OutTraceEnd) const;
+	void AddInputMappingContext() const;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputMappingContext> PlayerMappingContext;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> FireAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	int32 PlayerMappingPriority = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<USpringArmComponent> CameraBoom;
@@ -43,6 +57,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Aiming", meta = (ClampMin = "1000.0"))
 	float CursorTraceDistance = 50000.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Debug")
+	bool bDrawFireTraceDebug = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Debug", meta = (ClampMin = "0.0"))
+	float FireTraceDebugDuration = 1.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "View Model|Aiming", meta = (ClampMin = "0.0"))
 	float ViewModelAimYawLimit = 35.f;
