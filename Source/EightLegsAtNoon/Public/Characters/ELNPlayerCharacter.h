@@ -7,6 +7,7 @@
 #include "ELNPlayerCharacter.generated.h"
 
 class UCameraComponent;
+class UAnimMontage;
 class UInputAction;
 class UInputMappingContext;
 class USkeletalMeshComponent;
@@ -31,9 +32,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Aiming")
 	FVector GetCursorWorldLocation() const { return CursorWorldLocation; }
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void FireTrace();
+
 protected:
 	void UpdateCursorAim(float DeltaTime);
 	void HandleFirePressed();
+	bool PlayFireMontage();
+	void HandleFireMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	bool GetCursorTrace(FHitResult& OutHit, FVector& OutTraceStart, FVector& OutTraceEnd) const;
 	void AddInputMappingContext() const;
 
@@ -64,6 +70,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Debug", meta = (ClampMin = "0.0"))
 	float FireTraceDebugDuration = 1.5f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Animation")
+	TObjectPtr<UAnimMontage> FireMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Animation", meta = (ClampMin = "0.01"))
+	float FireMontagePlayRate = 1.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Animation")
+	bool bFireTraceFromAnimNotify = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "View Model|Aiming", meta = (ClampMin = "0.0"))
 	float ViewModelAimYawLimit = 35.f;
 
@@ -77,4 +92,5 @@ protected:
 	FVector CursorWorldLocation = FVector::ZeroVector;
 
 	FRotator ShotgunArmsBaseRotation = FRotator::ZeroRotator;
+	bool bIsFireLocked = false;
 };

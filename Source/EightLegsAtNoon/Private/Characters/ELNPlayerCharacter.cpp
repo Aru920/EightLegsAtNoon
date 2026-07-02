@@ -3,6 +3,8 @@
 
 #include "Characters/ELNPlayerCharacter.h"
 
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -144,6 +146,20 @@ void AELNPlayerCharacter::UpdateCursorAim(float DeltaTime)
 
 void AELNPlayerCharacter::HandleFirePressed()
 {
+	if (bIsFireLocked)
+	{
+		return;
+	}
+
+	const bool bMontageStarted = PlayFireMontage();
+	if (!bMontageStarted || !bFireTraceFromAnimNotify)
+	{
+		FireTrace();
+	}
+}
+
+void AELNPlayerCharacter::FireTrace()
+{
 	FHitResult FireHit;
 	FVector TraceStart;
 	FVector TraceEnd;
@@ -161,6 +177,42 @@ void AELNPlayerCharacter::HandleFirePressed()
 		{
 			DrawDebugSphere(GetWorld(), FireHit.ImpactPoint, 24.f, 16, FColor::Yellow, false, FireTraceDebugDuration, 0, 2.f);
 		}
+	}
+}
+
+bool AELNPlayerCharacter::PlayFireMontage()
+{
+	if (!FireMontage || !ShotgunArms)
+	{
+		return false;
+	}
+
+	UAnimInstance* AnimInstance = ShotgunArms->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return false;
+	}
+
+	const float MontageLength = AnimInstance->Montage_Play(FireMontage, FireMontagePlayRate);
+	if (MontageLength <= 0.f)
+	{
+		return false;
+	}
+
+	bIsFireLocked = true;
+
+	FOnMontageEnded MontageEndedDelegate;
+	MontageEndedDelegate.BindUObject(this, &AELNPlayerCharacter::HandleFireMontageEnded);
+	AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, FireMontage);
+
+	return true;
+}
+
+void AELNPlayerCharacter::HandleFireMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage == FireMontage)
+	{
+		bIsFireLocked = false;
 	}
 }
 
