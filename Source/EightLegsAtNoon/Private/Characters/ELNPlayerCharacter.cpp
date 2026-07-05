@@ -248,7 +248,7 @@ void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter) const
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
 		AActor* HitActor = Overlap.GetActor();
-		if (!HitActor || HitActor == this)
+		if (!HitActor || HitActor == this || HitActor->GetOwner() == this)
 		{
 			continue;
 		}
