@@ -12,7 +12,9 @@
 #include "DrawDebugHelpers.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Engine/Engine.h"
 #include "Engine/LocalPlayer.h"
+#include "Engine/OverlapResult.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -178,6 +180,11 @@ void AELNPlayerCharacter::FireTrace()
 			DrawDebugSphere(GetWorld(), FireHit.ImpactPoint, 24.f, 16, FColor::Yellow, false, FireTraceDebugDuration, 0, 2.f);
 		}
 	}
+
+	if (FireHit.bBlockingHit)
+	{
+		CheckPistolHitOverlap(FireHit.ImpactPoint);
+	}
 }
 
 bool AELNPlayerCharacter::PlayFireMontage()
@@ -216,6 +223,44 @@ void AELNPlayerCharacter::HandleFireMontageEnded(UAnimMontage* Montage, bool bIn
 	}
 }
 
+void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter) const
+{
+	if (bDrawPistolHitRadiusDebug)
+	{
+		DrawDebugSphere(GetWorld(), HitCenter, PistolHitRadius, 24, FColor::Green, false, FireTraceDebugDuration, 0, 2.f);
+	}
+
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+
+	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(ELNPistolHitOverlap), false, this);
+
+	TArray<FOverlapResult> Overlaps;
+	GetWorld()->OverlapMultiByObjectType(
+		Overlaps,
+		HitCenter,
+		FQuat::Identity,
+		ObjectQueryParams,
+		FCollisionShape::MakeSphere(PistolHitRadius),
+		QueryParams
+	);
+
+	for (const FOverlapResult& Overlap : Overlaps)
+	{
+		AActor* HitActor = Overlap.GetActor();
+		if (!HitActor || HitActor == this)
+		{
+			continue;
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Pistol hit overlap: %s"), *HitActor->GetName());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("Hit: %s"), *HitActor->GetName()));
+		}
+	}
+}
+
 bool AELNPlayerCharacter::GetCursorTrace(FHitResult& OutHit, FVector& OutTraceStart, FVector& OutTraceEnd) const
 {
 	const APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -235,7 +280,7 @@ bool AELNPlayerCharacter::GetCursorTrace(FHitResult& OutHit, FVector& OutTraceSt
 	OutTraceEnd = MouseWorldLocation + MouseWorldDirection * CursorTraceDistance;
 
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(ELNCursorTrace), false, this);
-	GetWorld()->LineTraceSingleByChannel(OutHit, OutTraceStart, OutTraceEnd, ECC_Visibility, QueryParams);
+	GetWorld()->LineTraceSingleByChannel(OutHit, OutTraceStart, OutTraceEnd, ECC_GameTraceChannel1, QueryParams);
 	return true;
 }
 

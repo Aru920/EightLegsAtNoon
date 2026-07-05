@@ -40,6 +40,7 @@ protected:
 	void HandleFirePressed();
 	bool PlayFireMontage();
 	void HandleFireMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void CheckPistolHitOverlap(const FVector& HitCenter) const;
 	bool GetCursorTrace(FHitResult& OutHit, FVector& OutTraceStart, FVector& OutTraceEnd) const;
 	void AddInputMappingContext() const;
 
@@ -69,6 +70,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Debug", meta = (ClampMin = "0.0"))
 	float FireTraceDebugDuration = 1.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (ClampMin = "1.0"))
+	float PistolHitRadius = 140.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Debug")
+	bool bDrawPistolHitRadiusDebug = true;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Animation")
 	TObjectPtr<UAnimMontage> FireMontage;
