@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "ELNSpiderCharacter.generated.h"
 
+class USkeletalMesh;
+
 UCLASS()
 class EIGHTLEGSATNOON_API AELNSpiderCharacter : public ACharacter
 {
@@ -22,8 +24,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Spider")
 	bool IsDead() const { return bIsDead; }
 
-	UFUNCTION(BlueprintCallable, Category = "Spider")
+UFUNCTION(BlueprintCallable, Category = "Spider")
 	void KillSpider(AController* EventInstigator, AActor* DamageCauser);
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void SetWalkSpeed(float NewWalkSpeed);
+
+	UFUNCTION(BlueprintCallable, Category = "Spider")
+	void SetVisualMesh(USkeletalMesh* NewMesh);
 
 protected:
 	virtual void BeginPlay() override;

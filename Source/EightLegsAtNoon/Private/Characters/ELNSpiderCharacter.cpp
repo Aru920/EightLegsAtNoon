@@ -2,6 +2,7 @@
 
 #include "AI/ELNSpiderAIController.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AELNSpiderCharacter::AELNSpiderCharacter()
@@ -70,4 +71,20 @@ void AELNSpiderCharacter::KillSpider(AController* EventInstigator, AActor* Damag
 
 	OnSpiderDied(EventInstigator, DamageCauser);
 	SetLifeSpan(DeathLifeSpan);
+}
+
+void AELNSpiderCharacter::SetWalkSpeed(float NewWalkSpeed)
+{
+	WalkSpeed = FMath::Max(0.f, NewWalkSpeed);
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AELNSpiderCharacter::SetVisualMesh(USkeletalMesh* NewMesh)
+{
+	if (!NewMesh)
+	{
+		return;
+	}
+
+	GetMesh()->SetSkeletalMesh(NewMesh);
 }
