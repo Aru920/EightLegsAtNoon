@@ -1,5 +1,6 @@
 #include "Characters/ELNSpiderCharacter.h"
 
+#include "AI/ELNSpiderAIController.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -10,6 +11,9 @@ AELNSpiderCharacter::AELNSpiderCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	AIControllerClass = AELNSpiderAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 420.f, 0.f);
