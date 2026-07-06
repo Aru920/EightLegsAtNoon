@@ -20,6 +20,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "InputAction.h"
 #include "InputCoreTypes.h"
+#include "Kismet/GameplayStatics.h"
 
 AELNPlayerCharacter::AELNPlayerCharacter()
 {
@@ -223,7 +224,7 @@ void AELNPlayerCharacter::HandleFireMontageEnded(UAnimMontage* Montage, bool bIn
 	}
 }
 
-void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter) const
+void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter)
 {
 	if (bDrawPistolHitRadiusDebug)
 	{
@@ -245,13 +246,17 @@ void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter) const
 		QueryParams
 	);
 
+	TSet<AActor*> DamagedActors;
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
 		AActor* HitActor = Overlap.GetActor();
-		if (!HitActor || HitActor == this || HitActor->GetOwner() == this)
+		if (!HitActor || HitActor == this || HitActor->GetOwner() == this || DamagedActors.Contains(HitActor))
 		{
 			continue;
 		}
+
+		DamagedActors.Add(HitActor);
+		UGameplayStatics::ApplyDamage(HitActor, PistolDamage, GetController(), this, nullptr);
 
 		UE_LOG(LogTemp, Log, TEXT("Pistol hit overlap: %s"), *HitActor->GetName());
 		if (GEngine)
