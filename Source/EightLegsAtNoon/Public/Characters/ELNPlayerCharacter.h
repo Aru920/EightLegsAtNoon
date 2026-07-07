@@ -78,7 +78,7 @@ protected:
 	float ImpactDebugSphereRadius = 10.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (ClampMin = "1.0"))
-	float PistolHitRadius = 140.f;
+	float PistolHitRadius = 45.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (ClampMin = "0.0"))
 	float PistolDamage = 1.f;

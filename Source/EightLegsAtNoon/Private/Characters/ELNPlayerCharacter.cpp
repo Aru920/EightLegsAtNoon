@@ -226,7 +226,7 @@ void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter)
 {
 	if (bDrawPistolHitRadiusDebug)
 	{
-		DrawDebugSphere(GetWorld(), HitCenter, PistolHitRadius, 24, FColor::Green, false, FireTraceDebugDuration, 0, 2.f);
+		DrawDebugSphere(GetWorld(), HitCenter, PistolHitRadius, 16, FColor::Green, false, FireTraceDebugDuration, 0, 1.5f);
 	}
 
 	FCollisionObjectQueryParams ObjectQueryParams;
