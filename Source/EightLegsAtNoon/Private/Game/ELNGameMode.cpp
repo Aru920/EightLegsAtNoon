@@ -9,7 +9,15 @@ void AELNGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	CacheSpiderSpawners();
-	StartNextWave();
+
+	if (FirstWaveDelay > 0.f)
+	{
+		GetWorldTimerManager().SetTimer(WaveTimerHandle, this, &AELNGameMode::StartNextWave, FirstWaveDelay, false);
+	}
+	else
+	{
+		StartNextWave();
+	}
 }
 
 void AELNGameMode::StartNextWave()
@@ -29,14 +37,30 @@ void AELNGameMode::StartNextWave()
 	}
 
 	++CurrentWave;
+	if (CurrentWave == 1)
+	{
+		CurrentWaveSpiderCount = FirstWaveSpiderCount;
+	}
+	else
+	{
+		const int32 MinIncrease = FMath::Min(MinSpidersAddedPerWave, MaxSpidersAddedPerWave);
+		const int32 MaxIncrease = FMath::Max(MinSpidersAddedPerWave, MaxSpidersAddedPerWave);
+		CurrentWaveSpiderCount += FMath::RandRange(MinIncrease, MaxIncrease);
+	}
 
-	const int32 SpiderCountPerSpawner = GetSpiderCountForWave();
-	PendingWaveSpawns = SpiderCountPerSpawner * SpiderSpawners.Num();
+	PendingWaveSpawns = CurrentWaveSpiderCount;
+	AliveSpidersInWave = 0;
 	CurrentWaveSpiderSpeed = GetSpiderSpeedForWave();
 
-	UE_LOG(LogTemp, Log, TEXT("Starting wave %d: %d spiders per spawner across %d spawners."), CurrentWave, SpiderCountPerSpawner, SpiderSpawners.Num());
+	UE_LOG(LogTemp, Log, TEXT("Starting wave %d: %d spiders."), CurrentWave, CurrentWaveSpiderCount);
 
-	OnWaveStarted(CurrentWave, PendingWaveSpawns);
+	OnWaveStarted(CurrentWave, CurrentWaveSpiderCount);
+
+	if (PendingWaveSpawns <= 0)
+	{
+		TryFinishWave();
+		return;
+	}
 
 	SpawnNextSpiderInWave();
 
@@ -46,9 +70,15 @@ void AELNGameMode::StartNextWave()
 	}
 }
 
-int32 AELNGameMode::GetSpiderCountForWave() const
+void AELNGameMode::NotifySpiderKilled(AELNSpiderCharacter* Spider)
 {
-	return BaseSpiderCount + FMath::Max(0, CurrentWave - 1) * ExtraSpidersPerWave;
+	if (!Spider || AliveSpidersInWave <= 0)
+	{
+		return;
+	}
+
+	--AliveSpidersInWave;
+	TryFinishWave();
 }
 
 float AELNGameMode::GetSpiderSpeedForWave() const
@@ -87,17 +117,38 @@ void AELNGameMode::SpawnNextSpiderInWave()
 	const int32 RandomSpawnerIndex = FMath::RandRange(0, SpiderSpawners.Num() - 1);
 	if (AELNSpiderSpawner* SpiderSpawner = SpiderSpawners[RandomSpawnerIndex])
 	{
-		SpiderSpawner->SpawnSpider(CurrentWaveSpiderSpeed);
+		if (SpiderSpawner->SpawnSpider(CurrentWaveSpiderSpeed))
+		{
+			++AliveSpidersInWave;
+		}
 	}
 
 	--PendingWaveSpawns;
 	if (PendingWaveSpawns <= 0)
 	{
 		GetWorldTimerManager().ClearTimer(SpiderSpawnTimerHandle);
+		TryFinishWave();
+	}
+}
 
-		if (WaveInterval > 0.f)
-		{
-			GetWorldTimerManager().SetTimer(WaveTimerHandle, this, &AELNGameMode::StartNextWave, WaveInterval, false);
-		}
+void AELNGameMode::TryFinishWave()
+{
+	if (PendingWaveSpawns > 0 || AliveSpidersInWave > 0)
+	{
+		return;
+	}
+
+	GetWorldTimerManager().ClearTimer(SpiderSpawnTimerHandle);
+
+	UE_LOG(LogTemp, Log, TEXT("Wave %d cleared."), CurrentWave);
+	OnWaveCleared(CurrentWave);
+
+	if (WaveInterval > 0.f)
+	{
+		GetWorldTimerManager().SetTimer(WaveTimerHandle, this, &AELNGameMode::StartNextWave, WaveInterval, false);
+	}
+	else
+	{
+		StartNextWave();
 	}
 }

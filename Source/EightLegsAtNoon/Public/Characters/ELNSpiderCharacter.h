@@ -24,7 +24,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Spider")
 	bool IsDead() const { return bIsDead; }
 
-UFUNCTION(BlueprintCallable, Category = "Spider")
+	UFUNCTION(BlueprintCallable, Category = "Spider")
 	void KillSpider(AController* EventInstigator, AActor* DamageCauser);
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
@@ -47,9 +47,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
 	float WalkSpeed = 360.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spider", meta = (ClampMin = "0.0"))
-	float DeathLifeSpan = 3.f;
 
 private:
 	bool bIsDead = false;

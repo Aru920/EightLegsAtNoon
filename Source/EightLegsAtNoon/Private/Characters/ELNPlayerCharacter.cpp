@@ -171,14 +171,11 @@ void AELNPlayerCharacter::FireTrace()
 		return;
 	}
 
-	const FVector DebugEnd = FireHit.bBlockingHit ? FireHit.ImpactPoint : TraceEnd;
 	if (bDrawFireTraceDebug)
 	{
-		DrawDebugLine(GetWorld(), TraceStart, DebugEnd, FColor::Red, false, FireTraceDebugDuration, 0, 2.f);
-
 		if (FireHit.bBlockingHit)
 		{
-			DrawDebugSphere(GetWorld(), FireHit.ImpactPoint, 24.f, 16, FColor::Yellow, false, FireTraceDebugDuration, 0, 2.f);
+			DrawDebugSphere(GetWorld(), FireHit.ImpactPoint, ImpactDebugSphereRadius, 12, FColor::Yellow, false, FireTraceDebugDuration, 0, 1.5f);
 		}
 	}
 

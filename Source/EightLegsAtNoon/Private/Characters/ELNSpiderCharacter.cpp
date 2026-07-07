@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Game/ELNGameMode.h"
 
 AELNSpiderCharacter::AELNSpiderCharacter()
 {
@@ -69,8 +70,12 @@ void AELNSpiderCharacter::KillSpider(AController* EventInstigator, AActor* Damag
 	GetCharacterMovement()->DisableMovement();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	if (AELNGameMode* GameMode = GetWorld()->GetAuthGameMode<AELNGameMode>())
+	{
+		GameMode->NotifySpiderKilled(this);
+	}
+
 	OnSpiderDied(EventInstigator, DamageCauser);
-	SetLifeSpan(DeathLifeSpan);
 }
 
 void AELNSpiderCharacter::SetWalkSpeed(float NewWalkSpeed)

@@ -4,6 +4,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "ELNGameMode.generated.h"
 
+class AELNSpiderCharacter;
 class AELNSpiderSpawner;
 
 UCLASS()
@@ -17,20 +18,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
 	void StartNextWave();
 
+	UFUNCTION(BlueprintCallable, Category = "Waves")
+	void NotifySpiderKilled(AELNSpiderCharacter* Spider);
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Waves")
 	void OnWaveStarted(int32 WaveNumber, int32 SpiderCount);
 
-	int32 GetSpiderCountForWave() const;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Waves")
+	void OnWaveCleared(int32 WaveNumber);
+
 	float GetSpiderSpeedForWave() const;
 	void CacheSpiderSpawners();
 	void SpawnNextSpiderInWave();
+	void TryFinishWave();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0"))
-	int32 BaseSpiderCount = 3;
+	int32 FirstWaveSpiderCount = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0"))
-	int32 ExtraSpidersPerWave = 2;
+	int32 MinSpidersAddedPerWave = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0"))
+	int32 MaxSpidersAddedPerWave = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0.0"))
 	float BaseSpiderSpeed = 100.f;
@@ -41,11 +51,20 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0.0"))
 	float WaveInterval = 10.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0.0"))
+	float FirstWaveDelay = 2.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0.01"))
 	float SpiderSpawnInterval = 3.f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Waves")
 	int32 CurrentWave = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Waves")
+	int32 CurrentWaveSpiderCount = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Waves")
+	int32 AliveSpidersInWave = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Spawning")
 	TArray<TObjectPtr<AELNSpiderSpawner>> SpiderSpawners;
