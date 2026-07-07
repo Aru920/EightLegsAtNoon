@@ -44,6 +44,9 @@ protected:
 	bool GetCursorTrace(FHitResult& OutHit, FVector& OutTraceStart, FVector& OutTraceEnd) const;
 	void AddInputMappingContext() const;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Weapon")
+	void OnPistolImpact(FVector ImpactLocation, FVector ImpactNormal, AActor* HitActor);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> PlayerMappingContext;
 

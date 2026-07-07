@@ -181,6 +181,7 @@ void AELNPlayerCharacter::FireTrace()
 
 	if (FireHit.bBlockingHit)
 	{
+		OnPistolImpact(FireHit.ImpactPoint, FireHit.ImpactNormal, FireHit.GetActor());
 		CheckPistolHitOverlap(FireHit.ImpactPoint);
 	}
 }
