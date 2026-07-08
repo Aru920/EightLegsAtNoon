@@ -2,9 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "TimerManager.h"
 #include "ELNDwarfCharacter.generated.h"
 
 class AELNDwarfSafeZone;
+class AELNSpiderCharacter;
 
 UCLASS()
 class EIGHTLEGSATNOON_API AELNDwarfCharacter : public ACharacter
@@ -30,6 +32,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Dwarfy")
 	bool IsDead() const { return bIsDead; }
 
+	UFUNCTION(BlueprintPure, Category = "Dwarfy")
+	bool IsPanicking() const { return bIsPanicking; }
+
+	UFUNCTION(BlueprintPure, Category = "Dwarfy")
+	AActor* GetPanicThreat() const { return PanicThreat; }
+
 	UFUNCTION(BlueprintPure, Category = "AI")
 	AELNDwarfSafeZone* GetSafeZone() const { return SafeZone; }
 
@@ -42,11 +50,26 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dwarfy")
 	void OnDwarfDied(AActor* DamageCauser);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dwarfy")
+	void OnDwarfPanicStarted(AActor* ThreatActor);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dwarfy")
+	void OnDwarfPanicEnded();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
 	float WalkSpeed = 220.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
+	float PanicSpeed = 360.f;
+
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "AI")
 	TObjectPtr<AELNDwarfSafeZone> SafeZone;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI", meta = (ClampMin = "0.0"))
+	float PanicDetectionRadius = 600.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI", meta = (ClampMin = "0.01"))
+	float PanicCheckInterval = 0.25f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dwarfy", meta = (ClampMin = "1"))
 	int32 MaxLives = 3;
@@ -58,5 +81,15 @@ protected:
 	bool bShowDwarfDebug = true;
 
 private:
+	void UpdatePanicState();
+	void SetPanicState(bool bNewPanicking, AELNSpiderCharacter* ThreatActor);
+	AELNSpiderCharacter* FindNearestLivingSpiderInRange() const;
+
+	UPROPERTY()
+	TObjectPtr<AActor> PanicThreat;
+
+	FTimerHandle PanicTimerHandle;
+
+	bool bIsPanicking = false;
 	bool bIsDead = false;
 };
