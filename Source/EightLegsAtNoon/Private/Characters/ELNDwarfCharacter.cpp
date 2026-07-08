@@ -28,7 +28,8 @@ void AELNDwarfCharacter::BeginPlay()
 
 	CurrentLives = MaxLives;
 	bIsDead = false;
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	bIsHitSlowed = false;
+	RefreshMoveSpeed();
 	OnLivesChanged.Broadcast(CurrentLives, MaxLives);
 
 	if (PanicCheckInterval > 0.f)
@@ -73,6 +74,7 @@ float AELNDwarfCharacter::TakeDamage(
 		bIsDead = true;
 		SetPanicState(false, nullptr);
 		GetWorldTimerManager().ClearTimer(PanicTimerHandle);
+		GetWorldTimerManager().ClearTimer(HitSlowTimerHandle);
 		GetCharacterMovement()->DisableMovement();
 		UE_LOG(LogTemp, Warning, TEXT("Dwarfy died."));
 		if (bShowDwarfDebug && GEngine)
@@ -81,6 +83,10 @@ float AELNDwarfCharacter::TakeDamage(
 		}
 		OnDwarfDeath.Broadcast(DamageCauser);
 		OnDwarfDied(DamageCauser);
+	}
+	else
+	{
+		ApplyHitSlow();
 	}
 
 	return static_cast<float>(DamageTaken);
@@ -108,7 +114,7 @@ void AELNDwarfCharacter::SetPanicState(bool bNewPanicking, AELNSpiderCharacter* 
 
 	bIsPanicking = bNewPanicking;
 	PanicThreat = ThreatActor;
-	GetCharacterMovement()->MaxWalkSpeed = bIsPanicking ? PanicSpeed : WalkSpeed;
+	RefreshMoveSpeed();
 
 	if (bIsPanicking)
 	{
@@ -169,4 +175,32 @@ AELNSpiderCharacter* AELNDwarfCharacter::FindNearestLivingSpiderInRange() const
 	}
 
 	return NearestSpider;
+}
+
+void AELNDwarfCharacter::ApplyHitSlow()
+{
+	if (bIsDead || HitSlowDuration <= 0.f)
+	{
+		return;
+	}
+
+	bIsHitSlowed = true;
+	RefreshMoveSpeed();
+	GetWorldTimerManager().SetTimer(HitSlowTimerHandle, this, &AELNDwarfCharacter::ClearHitSlow, HitSlowDuration, false);
+}
+
+void AELNDwarfCharacter::ClearHitSlow()
+{
+	bIsHitSlowed = false;
+	RefreshMoveSpeed();
+}
+
+void AELNDwarfCharacter::RefreshMoveSpeed()
+{
+	if (bIsDead)
+	{
+		return;
+	}
+
+	GetCharacterMovement()->MaxWalkSpeed = bIsHitSlowed ? HitSlowSpeed : (bIsPanicking ? PanicSpeed : WalkSpeed);
 }

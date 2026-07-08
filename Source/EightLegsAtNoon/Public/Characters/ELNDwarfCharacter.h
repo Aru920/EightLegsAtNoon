@@ -71,6 +71,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
 	float PanicSpeed = 360.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Hit Reaction", meta = (ClampMin = "0.0"))
+	float HitSlowSpeed = 120.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Hit Reaction", meta = (ClampMin = "0.0"))
+	float HitSlowDuration = 0.75f;
+
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "AI")
 	TObjectPtr<AELNDwarfSafeZone> SafeZone;
 
@@ -93,12 +99,17 @@ private:
 	void UpdatePanicState();
 	void SetPanicState(bool bNewPanicking, AELNSpiderCharacter* ThreatActor);
 	AELNSpiderCharacter* FindNearestLivingSpiderInRange() const;
+	void ApplyHitSlow();
+	void ClearHitSlow();
+	void RefreshMoveSpeed();
 
 	UPROPERTY()
 	TObjectPtr<AActor> PanicThreat;
 
 	FTimerHandle PanicTimerHandle;
+	FTimerHandle HitSlowTimerHandle;
 
 	bool bIsPanicking = false;
+	bool bIsHitSlowed = false;
 	bool bIsDead = false;
 };
