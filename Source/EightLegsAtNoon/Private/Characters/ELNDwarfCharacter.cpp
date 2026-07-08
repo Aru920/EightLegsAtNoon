@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Game/ELNGameMode.h"
 
 AELNDwarfCharacter::AELNDwarfCharacter()
 {
@@ -83,6 +84,11 @@ float AELNDwarfCharacter::TakeDamage(
 		}
 		OnDwarfDeath.Broadcast(DamageCauser);
 		OnDwarfDied(DamageCauser);
+
+		if (AELNGameMode* GameMode = GetWorld()->GetAuthGameMode<AELNGameMode>())
+		{
+			GameMode->HandleDwarfyDied(this, DamageCauser);
+		}
 	}
 	else
 	{

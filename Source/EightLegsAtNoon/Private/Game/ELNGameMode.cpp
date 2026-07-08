@@ -1,6 +1,8 @@
 #include "Game/ELNGameMode.h"
 
+#include "Characters/ELNSpiderCharacter.h"
 #include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "World/ELNSpiderSpawner.h"
 
@@ -8,6 +10,7 @@ void AELNGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	bGameOver = false;
 	SpidersKilled = 0;
 	OnSpidersKilledChanged(SpidersKilled);
 
@@ -25,6 +28,11 @@ void AELNGameMode::BeginPlay()
 
 void AELNGameMode::StartNextWave()
 {
+	if (bGameOver)
+	{
+		return;
+	}
+
 	GetWorldTimerManager().ClearTimer(WaveTimerHandle);
 	GetWorldTimerManager().ClearTimer(SpiderSpawnTimerHandle);
 
@@ -75,7 +83,7 @@ void AELNGameMode::StartNextWave()
 
 void AELNGameMode::NotifySpiderKilled(AELNSpiderCharacter* Spider)
 {
-	if (!Spider || AliveSpidersInWave <= 0)
+	if (bGameOver || !Spider || AliveSpidersInWave <= 0)
 	{
 		return;
 	}
@@ -85,6 +93,34 @@ void AELNGameMode::NotifySpiderKilled(AELNSpiderCharacter* Spider)
 
 	--AliveSpidersInWave;
 	TryFinishWave();
+}
+
+void AELNGameMode::HandleDwarfyDied(AActor* DwarfActor, AActor* DamageCauser)
+{
+	if (bGameOver)
+	{
+		return;
+	}
+
+	bGameOver = true;
+	PendingWaveSpawns = 0;
+	AliveSpidersInWave = 0;
+
+	GetWorldTimerManager().ClearTimer(WaveTimerHandle);
+	GetWorldTimerManager().ClearTimer(SpiderSpawnTimerHandle);
+	GetWorldTimerManager().SetTimerForNextTick(this, &AELNGameMode::CleanupRemainingSpiders);
+
+	UE_LOG(LogTemp, Warning, TEXT("Game over. Wave reached: %d. Spiders killed: %d."), CurrentWave, SpidersKilled);
+	OnGameOver(SpidersKilled, CurrentWave);
+}
+
+void AELNGameMode::RestartMatch()
+{
+	if (const UWorld* World = GetWorld())
+	{
+		const FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(World, true);
+		UGameplayStatics::OpenLevel(this, FName(*CurrentLevelName), false);
+	}
 }
 
 float AELNGameMode::GetSpiderSpeedForWave() const
@@ -104,7 +140,7 @@ void AELNGameMode::CacheSpiderSpawners()
 
 void AELNGameMode::SpawnNextSpiderInWave()
 {
-	if (PendingWaveSpawns <= 0)
+	if (bGameOver || PendingWaveSpawns <= 0)
 	{
 		return;
 	}
@@ -139,6 +175,11 @@ void AELNGameMode::SpawnNextSpiderInWave()
 
 void AELNGameMode::TryFinishWave()
 {
+	if (bGameOver)
+	{
+		return;
+	}
+
 	if (PendingWaveSpawns > 0 || AliveSpidersInWave > 0)
 	{
 		return;
@@ -156,5 +197,24 @@ void AELNGameMode::TryFinishWave()
 	else
 	{
 		StartNextWave();
+	}
+}
+
+void AELNGameMode::CleanupRemainingSpiders()
+{
+	for (TActorIterator<AELNSpiderCharacter> It(GetWorld()); It; ++It)
+	{
+		AELNSpiderCharacter* Spider = *It;
+		if (!Spider || Spider->IsDead())
+		{
+			continue;
+		}
+
+		if (AController* SpiderController = Spider->GetController())
+		{
+			SpiderController->StopMovement();
+		}
+
+		Spider->Destroy();
 	}
 }

@@ -21,6 +21,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Waves")
 	void NotifySpiderKilled(AELNSpiderCharacter* Spider);
 
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void HandleDwarfyDied(AActor* DwarfActor, AActor* DamageCauser);
+
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void RestartMatch();
+
+	UFUNCTION(BlueprintPure, Category = "Game")
+	bool IsGameOver() const { return bGameOver; }
+
 	UFUNCTION(BlueprintPure, Category = "Stats")
 	int32 GetSpidersKilled() const { return SpidersKilled; }
 
@@ -37,10 +46,14 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
 	void OnSpidersKilledChanged(int32 NewSpidersKilled);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Game")
+	void OnGameOver(int32 FinalSpidersKilled, int32 WaveReached);
+
 	float GetSpiderSpeedForWave() const;
 	void CacheSpiderSpawners();
 	void SpawnNextSpiderInWave();
 	void TryFinishWave();
+	void CleanupRemainingSpiders();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0"))
 	int32 FirstWaveSpiderCount = 10;
@@ -77,6 +90,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	int32 SpidersKilled = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Game")
+	bool bGameOver = false;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Spawning")
 	TArray<TObjectPtr<AELNSpiderSpawner>> SpiderSpawners;
