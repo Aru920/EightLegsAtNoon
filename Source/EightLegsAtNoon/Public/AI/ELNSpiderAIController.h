@@ -9,7 +9,7 @@ class AELNSpiderCharacter;
 
 UCLASS()
 class EIGHTLEGSATNOON_API AELNSpiderAIController : public AAIController
-{git 
+{
 	GENERATED_BODY()
 
 public:
