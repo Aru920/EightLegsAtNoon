@@ -8,6 +8,9 @@
 class AELNDwarfSafeZone;
 class AELNSpiderCharacter;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FELNDwarfLivesChangedSignature, int32, CurrentLives, int32, MaxLives);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FELNDwarfDeathSignature, AActor*, DamageCauser);
+
 UCLASS()
 class EIGHTLEGSATNOON_API AELNDwarfCharacter : public ACharacter
 {
@@ -40,6 +43,12 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "AI")
 	AELNDwarfSafeZone* GetSafeZone() const { return SafeZone; }
+
+	UPROPERTY(BlueprintAssignable, Category = "Dwarfy")
+	FELNDwarfLivesChangedSignature OnLivesChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Dwarfy")
+	FELNDwarfDeathSignature OnDwarfDeath;
 
 protected:
 	virtual void BeginPlay() override;

@@ -29,6 +29,7 @@ void AELNDwarfCharacter::BeginPlay()
 	CurrentLives = MaxLives;
 	bIsDead = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	OnLivesChanged.Broadcast(CurrentLives, MaxLives);
 
 	if (PanicCheckInterval > 0.f)
 	{
@@ -64,6 +65,7 @@ float AELNDwarfCharacter::TakeDamage(
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(TEXT("Dwarfy hit: %d/%d lives"), CurrentLives, MaxLives));
 	}
 
+	OnLivesChanged.Broadcast(CurrentLives, MaxLives);
 	OnDwarfDamaged(CurrentLives, MaxLives, DamageTaken, DamageCauser);
 
 	if (CurrentLives <= 0)
@@ -77,6 +79,7 @@ float AELNDwarfCharacter::TakeDamage(
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("Dwarfy died"));
 		}
+		OnDwarfDeath.Broadcast(DamageCauser);
 		OnDwarfDied(DamageCauser);
 	}
 
