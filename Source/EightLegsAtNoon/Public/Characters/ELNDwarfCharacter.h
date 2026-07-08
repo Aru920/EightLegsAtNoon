@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "ELNDwarfCharacter.generated.h"
 
+class AELNDwarfSafeZone;
+
 UCLASS()
 class EIGHTLEGSATNOON_API AELNDwarfCharacter : public ACharacter
 {
@@ -28,6 +30,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Dwarfy")
 	bool IsDead() const { return bIsDead; }
 
+	UFUNCTION(BlueprintPure, Category = "AI")
+	AELNDwarfSafeZone* GetSafeZone() const { return SafeZone; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -39,6 +44,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
 	float WalkSpeed = 220.f;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "AI")
+	TObjectPtr<AELNDwarfSafeZone> SafeZone;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dwarfy", meta = (ClampMin = "1"))
 	int32 MaxLives = 3;
