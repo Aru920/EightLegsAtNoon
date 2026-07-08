@@ -8,6 +8,9 @@ void AELNGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SpidersKilled = 0;
+	OnSpidersKilledChanged(SpidersKilled);
+
 	CacheSpiderSpawners();
 
 	if (FirstWaveDelay > 0.f)
@@ -76,6 +79,9 @@ void AELNGameMode::NotifySpiderKilled(AELNSpiderCharacter* Spider)
 	{
 		return;
 	}
+
+	++SpidersKilled;
+	OnSpidersKilledChanged(SpidersKilled);
 
 	--AliveSpidersInWave;
 	TryFinishWave();

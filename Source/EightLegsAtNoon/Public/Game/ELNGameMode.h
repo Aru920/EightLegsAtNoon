@@ -21,12 +21,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Waves")
 	void NotifySpiderKilled(AELNSpiderCharacter* Spider);
 
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetSpidersKilled() const { return SpidersKilled; }
+
+	UFUNCTION(BlueprintPure, Category = "Waves")
+	int32 GetCurrentWave() const { return CurrentWave; }
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Waves")
 	void OnWaveStarted(int32 WaveNumber, int32 SpiderCount);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Waves")
 	void OnWaveCleared(int32 WaveNumber);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
+	void OnSpidersKilledChanged(int32 NewSpidersKilled);
 
 	float GetSpiderSpeedForWave() const;
 	void CacheSpiderSpawners();
@@ -65,6 +74,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Waves")
 	int32 AliveSpidersInWave = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	int32 SpidersKilled = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Spawning")
 	TArray<TObjectPtr<AELNSpiderSpawner>> SpiderSpawners;
