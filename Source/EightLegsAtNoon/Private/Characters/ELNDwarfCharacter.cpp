@@ -98,6 +98,16 @@ float AELNDwarfCharacter::TakeDamage(
 	return static_cast<float>(DamageTaken);
 }
 
+void AELNDwarfCharacter::NotifyFriendlyShot(AActor* ShotBy)
+{
+	if (bIsDead)
+	{
+		return;
+	}
+
+	OnDwarfFriendlyShot(ShotBy);
+}
+
 void AELNDwarfCharacter::UpdatePanicState()
 {
 	if (bIsDead)

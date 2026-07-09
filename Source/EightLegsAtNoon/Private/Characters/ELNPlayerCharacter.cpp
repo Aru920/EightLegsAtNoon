@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Camera/CameraComponent.h"
+#include "Characters/ELNDwarfCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -210,6 +211,7 @@ bool AELNPlayerCharacter::PlayFireMontage()
 	FOnMontageEnded MontageEndedDelegate;
 	MontageEndedDelegate.BindUObject(this, &AELNPlayerCharacter::HandleFireMontageEnded);
 	AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, FireMontage);
+	AnimInstance->OnPlayMontageNotifyBegin.AddUniqueDynamic(this, &AELNPlayerCharacter::HandleFireMontageNotifyBegin);
 
 	return true;
 }
@@ -220,6 +222,16 @@ void AELNPlayerCharacter::HandleFireMontageEnded(UAnimMontage* Montage, bool bIn
 	{
 		bIsFireLocked = false;
 	}
+}
+
+void AELNPlayerCharacter::HandleFireMontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
+{
+	if (!bFireTraceFromAnimNotify || NotifyName != FireTraceNotifyName || BranchingPointPayload.SequenceAsset != FireMontage)
+	{
+		return;
+	}
+
+	FireTrace();
 }
 
 void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter)
@@ -254,6 +266,13 @@ void AELNPlayerCharacter::CheckPistolHitOverlap(const FVector& HitCenter)
 		}
 
 		DamagedActors.Add(HitActor);
+
+		if (AELNDwarfCharacter* Dwarf = Cast<AELNDwarfCharacter>(HitActor))
+		{
+			Dwarf->NotifyFriendlyShot(this);
+			continue;
+		}
+
 		UGameplayStatics::ApplyDamage(HitActor, PistolDamage, GetController(), this, nullptr);
 
 		UE_LOG(LogTemp, Log, TEXT("Pistol hit overlap: %s"), *HitActor->GetName());

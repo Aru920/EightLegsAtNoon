@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Animation/AnimNotifies/AnimNotify.h"
 #include "GameFramework/Character.h"
 #include "ELNPlayerCharacter.generated.h"
 
@@ -40,6 +41,8 @@ protected:
 	void HandleFirePressed();
 	bool PlayFireMontage();
 	void HandleFireMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	UFUNCTION()
+	void HandleFireMontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
 	void CheckPistolHitOverlap(const FVector& HitCenter);
 	bool GetCursorTrace(FHitResult& OutHit, FVector& OutTraceStart, FVector& OutTraceEnd) const;
 	void AddInputMappingContext() const;
@@ -94,6 +97,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Animation")
 	bool bFireTraceFromAnimNotify = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Animation")
+	FName FireTraceNotifyName = "FireShot";
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "View Model|Aiming", meta = (ClampMin = "0.0"))
 	float ViewModelAimYawLimit = 35.f;

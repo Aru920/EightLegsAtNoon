@@ -44,6 +44,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "AI")
 	AELNDwarfSafeZone* GetSafeZone() const { return SafeZone; }
 
+	UFUNCTION(BlueprintCallable, Category = "Dwarfy")
+	void NotifyFriendlyShot(AActor* ShotBy);
+
 	UPROPERTY(BlueprintAssignable, Category = "Dwarfy")
 	FELNDwarfLivesChangedSignature OnLivesChanged;
 
@@ -64,6 +67,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dwarfy")
 	void OnDwarfPanicEnded();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dwarfy")
+	void OnDwarfFriendlyShot(AActor* ShotBy);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (ClampMin = "0.0"))
 	float WalkSpeed = 220.f;
