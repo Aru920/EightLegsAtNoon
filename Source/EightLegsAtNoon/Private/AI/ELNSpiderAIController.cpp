@@ -22,6 +22,8 @@ void AELNSpiderAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	AttackCooldownRemaining = FMath::Max(0.f, AttackCooldownRemaining - DeltaSeconds);
+
 	AELNSpiderCharacter* Spider = Cast<AELNSpiderCharacter>(GetPawn());
 	if (!Spider || Spider->IsDead())
 	{
@@ -76,19 +78,29 @@ bool AELNSpiderAIController::TryAttackDwarf(AELNSpiderCharacter* Spider)
 		return false;
 	}
 
+	if (Spider->IsAttacking())
+	{
+		return true;
+	}
+
+	if (AttackCooldownRemaining > 0.f)
+	{
+		return true;
+	}
+
 	const float DistanceSquared = FVector::DistSquared(Spider->GetActorLocation(), DwarfTarget->GetActorLocation());
 	if (DistanceSquared > FMath::Square(AttackRange))
 	{
 		return false;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("%s attacked Dwarfy and will die."), *Spider->GetName());
+	UE_LOG(LogTemp, Log, TEXT("%s attacked Dwarfy."), *Spider->GetName());
 	if (bShowAttackDebug && GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange, TEXT("Spider hit Dwarfy"));
 	}
 
-	UGameplayStatics::ApplyDamage(DwarfTarget, AttackDamage, this, Spider, nullptr);
-	Spider->KillSpider(this, DwarfTarget);
+	Spider->StartAttack(DwarfTarget, AttackDamage, this);
+	AttackCooldownRemaining = AttackCooldown;
 	return true;
 }

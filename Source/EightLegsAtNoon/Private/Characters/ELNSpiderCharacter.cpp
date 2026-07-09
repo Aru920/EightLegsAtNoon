@@ -5,6 +5,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Game/ELNGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 AELNSpiderCharacter::AELNSpiderCharacter()
 {
@@ -27,6 +28,8 @@ void AELNSpiderCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
+	bIsAttacking = false;
+	bHasAppliedAttackDamage = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
@@ -52,6 +55,61 @@ float AELNSpiderCharacter::TakeDamage(
 	return AppliedDamage;
 }
 
+void AELNSpiderCharacter::StartAttack(AActor* AttackTarget, float DamageAmount, AController* EventInstigator)
+{
+	if (bIsDead || bIsAttacking || !AttackTarget || DamageAmount <= 0.f)
+	{
+		return;
+	}
+
+	bIsAttacking = true;
+	bHasAppliedAttackDamage = false;
+	CurrentAttackTarget = AttackTarget;
+	PendingAttackDamage = DamageAmount;
+	PendingAttackInstigator = EventInstigator;
+
+	if (AController* CurrentController = GetController())
+	{
+		CurrentController->StopMovement();
+	}
+
+	GetCharacterMovement()->StopMovementImmediately();
+	OnSpiderAttackStarted(AttackTarget);
+}
+
+bool AELNSpiderCharacter::ApplyAttackDamage()
+{
+	if (bIsDead || !bIsAttacking || bHasAppliedAttackDamage || !CurrentAttackTarget)
+	{
+		return false;
+	}
+
+	bHasAppliedAttackDamage = true;
+	UGameplayStatics::ApplyDamage(CurrentAttackTarget, PendingAttackDamage, PendingAttackInstigator, this, nullptr);
+	return true;
+}
+
+void AELNSpiderCharacter::FinishAttack(bool bApplyDamage)
+{
+	if (bIsDead || !bIsAttacking)
+	{
+		return;
+	}
+
+	if (bApplyDamage)
+	{
+		ApplyAttackDamage();
+	}
+
+	bIsAttacking = false;
+	CurrentAttackTarget = nullptr;
+	PendingAttackInstigator = nullptr;
+	PendingAttackDamage = 0.f;
+	bHasAppliedAttackDamage = false;
+
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
 void AELNSpiderCharacter::KillSpider(AController* EventInstigator, AActor* DamageCauser)
 {
 	if (bIsDead)
@@ -60,6 +118,11 @@ void AELNSpiderCharacter::KillSpider(AController* EventInstigator, AActor* Damag
 	}
 
 	bIsDead = true;
+	bIsAttacking = false;
+	CurrentAttackTarget = nullptr;
+	PendingAttackInstigator = nullptr;
+	PendingAttackDamage = 0.f;
+	bHasAppliedAttackDamage = false;
 	Health = 0.f;
 
 	if (AController* CurrentController = GetController())
@@ -76,6 +139,11 @@ void AELNSpiderCharacter::KillSpider(AController* EventInstigator, AActor* Damag
 	}
 
 	OnSpiderDied(EventInstigator, DamageCauser);
+}
+
+void AELNSpiderCharacter::OnSpiderAttackStarted_Implementation(AActor* AttackTarget)
+{
+	FinishAttack(true);
 }
 
 void AELNSpiderCharacter::SetWalkSpeed(float NewWalkSpeed)

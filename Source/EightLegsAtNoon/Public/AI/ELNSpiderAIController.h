@@ -32,6 +32,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spider AI", meta = (ClampMin = "0.0"))
 	float AttackDamage = 1.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spider AI", meta = (ClampMin = "0.0"))
+	float AttackCooldown = 3.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spider AI", meta = (ClampMin = "0.01"))
 	float ChaseRefreshTime = 0.25f;
 
@@ -43,4 +46,5 @@ protected:
 
 private:
 	float ChaseRefreshTimer = 0.f;
+	float AttackCooldownRemaining = 0.f;
 };

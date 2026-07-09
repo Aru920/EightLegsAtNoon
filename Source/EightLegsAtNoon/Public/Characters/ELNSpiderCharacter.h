@@ -24,6 +24,18 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Spider")
 	bool IsDead() const { return bIsDead; }
 
+	UFUNCTION(BlueprintPure, Category = "Spider")
+	bool IsAttacking() const { return bIsAttacking; }
+
+	UFUNCTION(BlueprintCallable, Category = "Spider")
+	void StartAttack(AActor* AttackTarget, float DamageAmount, AController* EventInstigator);
+
+	UFUNCTION(BlueprintCallable, Category = "Spider")
+	bool ApplyAttackDamage();
+
+	UFUNCTION(BlueprintCallable, Category = "Spider")
+	void FinishAttack(bool bApplyDamage = true);
+
 	UFUNCTION(BlueprintCallable, Category = "Spider")
 	void KillSpider(AController* EventInstigator, AActor* DamageCauser);
 
@@ -39,6 +51,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Spider")
 	void OnSpiderDied(AController* EventInstigator, AActor* DamageCauser);
 
+	UFUNCTION(BlueprintNativeEvent, Category = "Spider")
+	void OnSpiderAttackStarted(AActor* AttackTarget);
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spider", meta = (ClampMin = "1.0"))
 	float MaxHealth = 1.f;
 
@@ -49,5 +64,14 @@ protected:
 	float WalkSpeed = 360.f;
 
 private:
+	UPROPERTY()
+	TObjectPtr<AActor> CurrentAttackTarget;
+
+	UPROPERTY()
+	TObjectPtr<AController> PendingAttackInstigator;
+
+	float PendingAttackDamage = 0.f;
+	bool bHasAppliedAttackDamage = false;
+	bool bIsAttacking = false;
 	bool bIsDead = false;
 };
