@@ -53,7 +53,7 @@ protected:
 	void CacheSpiderSpawners();
 	void SpawnNextSpiderInWave();
 	void TryFinishWave();
-	void CleanupRemainingSpiders();
+	void FreezeRemainingSpiders();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Waves", meta = (ClampMin = "0"))
 	int32 FirstWaveSpiderCount = 10;

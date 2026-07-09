@@ -108,7 +108,7 @@ void AELNGameMode::HandleDwarfyDied(AActor* DwarfActor, AActor* DamageCauser)
 
 	GetWorldTimerManager().ClearTimer(WaveTimerHandle);
 	GetWorldTimerManager().ClearTimer(SpiderSpawnTimerHandle);
-	GetWorldTimerManager().SetTimerForNextTick(this, &AELNGameMode::CleanupRemainingSpiders);
+	GetWorldTimerManager().SetTimerForNextTick(this, &AELNGameMode::FreezeRemainingSpiders);
 
 	UE_LOG(LogTemp, Warning, TEXT("Game over. Wave reached: %d. Spiders killed: %d."), CurrentWave, SpidersKilled);
 	OnGameOver(SpidersKilled, CurrentWave);
@@ -200,7 +200,7 @@ void AELNGameMode::TryFinishWave()
 	}
 }
 
-void AELNGameMode::CleanupRemainingSpiders()
+void AELNGameMode::FreezeRemainingSpiders()
 {
 	for (TActorIterator<AELNSpiderCharacter> It(GetWorld()); It; ++It)
 	{
@@ -215,6 +215,6 @@ void AELNGameMode::CleanupRemainingSpiders()
 			SpiderController->StopMovement();
 		}
 
-		Spider->Destroy();
+		Spider->SetWalkSpeed(0.f);
 	}
 }
